@@ -3,30 +3,42 @@
 const parserOpts = require(`./parser-opts`)
 
 module.exports = {
-  parserOpts,
+	parserOpts,
 
-  whatBump: (commits) => {
-    let level = 2
-    let breakings = 0
-    let features = 0
+	whatBump: commits => {
+		// level 0 = major
+		// level 0 = minor
+		// level 2 = patch
 
-    commits.forEach(commit => {
-      if (commit.notes.length > 0) {
-        breakings += commit.notes.length
-        level = 0
-      } else if (commit.type === `feat`) {
-        features += 1
-        if (level === 2) {
-          level = 1
-        }
-      }
-    })
+		let level = 2
+		let patch = 0
+		let minor = 0
+		let major = 0
 
-    return {
-      level: level,
-      reason: breakings === 1
-        ? `There is ${breakings} BREAKING CHANGE and ${features} features`
-        : `There are ${breakings} BREAKING CHANGES and ${features} features`
-    }
-  }
+		commits.forEach(commit => {
+			switch (commit.type) {
+				case 'BREAKING':
+				case 'breaking':
+					major += 1
+					level = 0
+					break
+				case 'major':
+				case 'minor':
+				case 'feat':
+					minor += 1
+					if (level === 2) {
+						level = 1
+					}
+					break
+				default:
+					patch += 1
+					break
+			}
+		})
+
+		return {
+			level: level,
+			reason: `Major: ${major} | Minor: ${minor} | Patch: ${patch}`
+		}
+	}
 }
