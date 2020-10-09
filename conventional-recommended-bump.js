@@ -19,10 +19,10 @@ module.exports = {
 			switch (commit.type) {
 				case 'BREAKING':
 				case 'breaking':
+				case 'major':
 					major += 1
 					level = 0
 					break
-				case 'major':
 				case 'minor':
 				case 'feat':
 					minor += 1
