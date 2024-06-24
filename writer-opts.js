@@ -1,25 +1,14 @@
 'use strict'
 
 const compareFunc = require(`compare-func`)
-const readFile = Q.denodeify(require(`fs`).readFile)
-const resolve = require(`path`).resolve
+const readFile = require(`fs`).readFileSync
+const writerOpts = getWriterOpts()
+writerOpts.mainTemplate = readFile(__dirname + `/templates/template.hbs`)
+writerOpts.headerPartial = readFile(__dirname + `/templates/header.hbs`)
+writerOpts.commitPartial = readFile(__dirname + `/templates/commit.hbs`)
+writerOpts.footerPartial = readFile(__dirname + `/templates/footer.hbs`)
 
-module.exports = Promise.all([
-  readFile(resolve(__dirname, `./templates/template.hbs`), `utf-8`),
-  readFile(resolve(__dirname, `./templates/header.hbs`), `utf-8`),
-  readFile(resolve(__dirname, `./templates/commit.hbs`), `utf-8`),
-  readFile(resolve(__dirname, `./templates/footer.hbs`), `utf-8`)
-])
-  .then(([template, header, commit, footer]) => {
-    const writerOpts = getWriterOpts()
-
-    writerOpts.mainTemplate = template
-    writerOpts.headerPartial = header
-    writerOpts.commitPartial = commit
-    writerOpts.footerPartial = footer
-
-    return writerOpts
-  })
+module.exports = writerOpts
 
 function getWriterOpts() {
   return {
