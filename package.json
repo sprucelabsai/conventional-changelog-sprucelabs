@@ -51,7 +51,6 @@
     "through2": "^4.0.2"
   },
   "dependencies": {
-    "compare-func": "^2.0.0",
-    "q": "^1.5.1"
+    "compare-func": "^2.0.0"
   }
 }
