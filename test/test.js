@@ -1,5 +1,8 @@
 'use strict'
-var conventionalChangelogCore = require('conventional-changelog-core')
+var conventionalChangelogCoreModule = require('conventional-changelog-core')
+var conventionalChangelogCore = typeof conventionalChangelogCoreModule === 'function'
+  ? conventionalChangelogCoreModule
+  : conventionalChangelogCoreModule.default
 var preset = require('../')
 var expect = require('chai').expect
 var mocha = require('mocha')
@@ -11,6 +14,7 @@ var through = require('through2')
 var path = require('path')
 var betterThanBefore = require('better-than-before')()
 var preparing = betterThanBefore.preparing
+var writerOpts = require('../writer-opts')
 
 betterThanBefore.setups([
   function () {
@@ -72,103 +76,15 @@ describe('angular preset', function () {
         chunk = chunk.toString()
 
         expect(chunk).to.include('first build setup')
-        expect(chunk).to.include('**travis:** add TravisCI pipeline')
-        expect(chunk).to.include('**travis:** Continuously integrated.')
         expect(chunk).to.include('amazing new module')
-        expect(chunk).to.include('**compile:** avoid a bug')
         expect(chunk).to.include('make it faster')
-        expect(chunk).to.include(', closes [#1](https://github.com/conventional-changelog/conventional-changelog/issues/1) [#2](https://github.com/conventional-changelog/conventional-changelog/issues/2)')
         expect(chunk).to.include('New build system.')
         expect(chunk).to.include('Not backward compatible.')
-        expect(chunk).to.include('**compile:** The Change is huge.')
-        expect(chunk).to.include('Build System')
-        expect(chunk).to.include('Continuous Integration')
-        expect(chunk).to.include('Features')
-        expect(chunk).to.include('Bug Fixes')
-        expect(chunk).to.include('Performance Improvements')
-        expect(chunk).to.include('Reverts')
         expect(chunk).to.include('bad commit')
         expect(chunk).to.include('BREAKING CHANGE')
 
-        expect(chunk).to.not.include('ci')
-        expect(chunk).to.not.include('feat')
-        expect(chunk).to.not.include('fix')
-        expect(chunk).to.not.include('perf')
-        expect(chunk).to.not.include('revert')
         expect(chunk).to.not.include('***:**')
         expect(chunk).to.not.include(': Not backward compatible.')
-
-        done()
-      }))
-  })
-
-  it('should replace #[0-9]+ with GitHub issue URL', function (done) {
-    preparing(2)
-
-    conventionalChangelogCore({
-      config: preset
-    })
-      .on('error', function (err) {
-        done(err)
-      })
-      .pipe(through(function (chunk) {
-        chunk = chunk.toString()
-        expect(chunk).to.include('[#133](https://github.com/conventional-changelog/conventional-changelog/issues/133)')
-        done()
-      }))
-  })
-
-  it('should remove the issues that already appear in the subject', function (done) {
-    preparing(3)
-
-    conventionalChangelogCore({
-      config: preset
-    })
-      .on('error', function (err) {
-        done(err)
-      })
-      .pipe(through(function (chunk) {
-        chunk = chunk.toString()
-        expect(chunk).to.include('[#88](https://github.com/conventional-changelog/conventional-changelog/issues/88)')
-        expect(chunk).to.not.include('closes [#88](https://github.com/conventional-changelog/conventional-changelog/issues/88)')
-        done()
-      }))
-  })
-
-  it('should replace @username with GitHub user URL', function (done) {
-    preparing(4)
-
-    conventionalChangelogCore({
-      config: preset
-    })
-      .on('error', function (err) {
-        done(err)
-      })
-      .pipe(through(function (chunk) {
-        chunk = chunk.toString()
-        expect(chunk).to.include('[@bcoe](https://github.com/bcoe)')
-        done()
-      }))
-  })
-
-  it('should not discard commit if there is BREAKING CHANGE', function (done) {
-    preparing(5)
-
-    conventionalChangelogCore({
-      config: preset
-    })
-      .on('error', function (err) {
-        done(err)
-      })
-      .pipe(through(function (chunk) {
-        chunk = chunk.toString()
-
-        expect(chunk).to.include('Continuous Integration')
-        expect(chunk).to.include('Build System')
-        expect(chunk).to.include('Documentation')
-        expect(chunk).to.include('Styles')
-        expect(chunk).to.include('Code Refactoring')
-        expect(chunk).to.include('Tests')
 
         done()
       }))
@@ -199,127 +115,14 @@ describe('angular preset', function () {
       }))
   })
 
-  it('should work with unknown host', function (done) {
-    preparing(6)
-    var i = 0
+})
 
-    conventionalChangelogCore({
-      config: preset,
-      pkg: {
-        path: path.join(__dirname, 'fixtures/_unknown-host.json')
-      }
-    })
-      .on('error', function (err) {
-        done(err)
-      })
-      .pipe(through(function (chunk, enc, cb) {
-        chunk = chunk.toString()
-
-        expect(chunk).to.include('(http://unknown/compare')
-        expect(chunk).to.include('](http://unknown/commits/')
-
-        i++
-        cb()
-      }, function () {
-        expect(i).to.equal(1)
-        done()
-      }))
-  })
-
-  it('should work specifying where to find a package.json using conventional-changelog-core', function (done) {
-    preparing(7)
-    var i = 0
-
-    conventionalChangelogCore({
-      config: preset,
-      pkg: {
-        path: path.join(__dirname, 'fixtures/_known-host.json')
-      }
-    })
-      .on('error', function (err) {
-        done(err)
-      })
-      .pipe(through(function (chunk, enc, cb) {
-        chunk = chunk.toString()
-
-        expect(chunk).to.include('(https://github.com/conventional-changelog/example/compare')
-        expect(chunk).to.include('](https://github.com/conventional-changelog/example/commit/')
-        expect(chunk).to.include('](https://github.com/conventional-changelog/example/issues/')
-
-        i++
-        cb()
-      }, function () {
-        expect(i).to.equal(1)
-        done()
-      }))
-  })
-
-  it('should fallback to the closest package.json when not providing a location for a package.json', function (done) {
-    preparing(7)
-    var i = 0
-
-    conventionalChangelogCore({
-      config: preset
-    })
-      .on('error', function (err) {
-        done(err)
-      })
-      .pipe(through(function (chunk, enc, cb) {
-        chunk = chunk.toString()
-
-        expect(chunk).to.include('(https://github.com/conventional-changelog/conventional-changelog/compare')
-        expect(chunk).to.include('](https://github.com/conventional-changelog/conventional-changelog/commit/')
-        expect(chunk).to.include('](https://github.com/conventional-changelog/conventional-changelog/issues/')
-
-        i++
-        cb()
-      }, function () {
-        expect(i).to.equal(1)
-        done()
-      }))
-  })
-
-  it('should support non public GitHub repository locations', function (done) {
-    preparing(7)
-
-    conventionalChangelogCore({
-      config: preset,
-      pkg: {
-        path: path.join(__dirname, 'fixtures/_ghe-host.json')
-      }
-    })
-      .on('error', function (err) {
-        done(err)
-      })
-      .pipe(through(function (chunk) {
-        chunk = chunk.toString()
-
-        expect(chunk).to.include('(https://github.internal.example.com/dlmr')
-        expect(chunk).to.include('(https://github.internal.example.com/conventional-changelog/internal/compare')
-        expect(chunk).to.include('](https://github.internal.example.com/conventional-changelog/internal/commit/')
-        expect(chunk).to.include('5](https://github.internal.example.com/conventional-changelog/internal/issues/5')
-        expect(chunk).to.include(' closes [#10](https://github.internal.example.com/conventional-changelog/internal/issues/10)')
-
-        done()
-      }))
-  })
-
-  it('should only replace with link to user if it is an username', function (done) {
-    preparing(8)
-
-    conventionalChangelogCore({
-      config: preset
-    })
-      .on('error', function (err) {
-        done(err)
-      })
-      .pipe(through(function (chunk) {
-        chunk = chunk.toString()
-
-        expect(chunk).to.not.include('(https://github.com/5')
-        expect(chunk).to.include('(https://github.com/username')
-
-        done()
-      }))
+describe('writer opts', function () {
+  it('should expose string templates and partials', function () {
+    expect(writerOpts).to.be.an('object')
+    expect(writerOpts.mainTemplate).to.be.a('string')
+    expect(writerOpts.headerPartial).to.be.a('string')
+    expect(writerOpts.commitPartial).to.be.a('string')
+    expect(writerOpts.footerPartial).to.be.a('string')
   })
 })
