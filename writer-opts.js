@@ -13,12 +13,10 @@ module.exports = writerOpts;
 function getWriterOpts() {
   return {
     transform: (commit, context) => {
-      let discard = true;
       const issues = [];
 
       commit.notes.forEach((note) => {
         note.title = `BREAKING CHANGES`;
-        discard = false;
       });
 
       const type = commit.type ? commit.type.toLowerCase() : "";
@@ -78,7 +76,7 @@ function getWriterOpts() {
       if (typeof commit.subject === `string`) {
         const url = "https://sprucelabsai.atlassian.net/browse/";
         commit.subject = commit.subject.replace(
-          /([A-Z]+\-[0-9]+)/g,
+          /([A-Z]+-[0-9]+)/g,
           (_, issue) => {
             issues.push(issue);
             return `[${issue}](${url}${issue})`;

@@ -11,7 +11,6 @@ var it = mocha.it
 var gitDummyCommit = require('git-dummy-commit')
 var shell = require('shelljs')
 var through = require('through2')
-var path = require('path')
 var betterThanBefore = require('better-than-before')()
 var preparing = betterThanBefore.preparing
 var writerOpts = require('../writer-opts')
