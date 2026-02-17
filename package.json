@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/sprucelabsai/conventional-changelog-sprucelabs.git"
+    "url": "git+https://github.com/sprucelabsai/conventional-changelog-sprucelabs.git"
   },
   "keywords": [
     "conventional-changelog",
